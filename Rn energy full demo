@@ -1,0 +1,68 @@
+
+<script>
+// ===============================
+// RN ENERGY - FAST DEMO SIMULATION
+// ===============================
+
+let motorState = false;
+let mode = "AUTO";
+let borewellLevel = 80;
+let filterTankLevel = 20;
+let dryRun = false;
+
+const SPEED_INTERVAL = 1000;
+const FILL_RATE = 8;
+const DRAIN_RATE = 6;
+
+function updateUI() {
+  document.querySelector("#borewell .fill").style.height = borewellLevel + "%";
+  document.querySelector("#borewell .level").innerText = borewellLevel + "%";
+
+  document.querySelector("#filter .fill").style.height = filterTankLevel + "%";
+  document.querySelector("#filter .level").innerText = filterTankLevel + "%";
+
+  document.querySelectorAll(".dot.green")[0].style.display = motorState ? "block" : "none";
+  document.querySelectorAll(".dot.red")[0].style.display = dryRun ? "block" : "none";
+}
+
+function motorON() {
+  if (!dryRun) motorState = true;
+}
+function motorOFF() {
+  motorState = false;
+}
+
+setInterval(() => {
+
+  if (motorState) {
+    filterTankLevel += FILL_RATE;
+    borewellLevel -= DRAIN_RATE;
+  }
+
+  filterTankLevel = Math.min(filterTankLevel, 100);
+  borewellLevel = Math.max(borewellLevel, 0);
+
+  if (borewellLevel <= 10 && motorState) {
+    dryRun = true;
+    motorOFF();
+  }
+
+  if (mode === "AUTO") {
+    if (filterTankLevel <= 30 && !dryRun) motorON();
+    if (filterTankLevel >= 100) motorOFF();
+  }
+
+  if (filterTankLevel >= 100 && !motorState) {
+    setTimeout(() => {
+      filterTankLevel = 20;
+      borewellLevel = 80;
+      dryRun = false;
+    }, 2000);
+  }
+
+  updateUI();
+
+}, SPEED_INTERVAL);
+
+updateUI();
+</script>   
